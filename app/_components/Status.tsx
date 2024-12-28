@@ -7,9 +7,26 @@ import {
   DropdownTrigger,
 } from '@nextui-org/react'
 import StatusRing from './StatusRing'
+import { StatusType, useQueryIssues } from '@/gql/issuesQueries'
+import { useEditIssueMutation } from '@/gql/issuesMutations'
 
-const Status = ({ status, issueId }) => {
-  const onAction = async (newStatus: string) => {}
+type StatusProps = {
+  status: StatusType
+  issueId: string
+}
+
+const Status = ({ status, issueId }: StatusProps) => {
+  const [_, editIssue] = useEditIssueMutation()
+
+  const onAction = async (newStatus: StatusType) => {
+    await editIssue({
+      input: { id: issueId, status: newStatus },
+    })
+
+    // if (response.data?.editIssue) {
+    //   // we need to invalidate the issueQuery and refetch all the queries
+    // }
+  }
 
   return (
     <Dropdown
@@ -27,7 +44,7 @@ const Status = ({ status, issueId }) => {
         className="p-3"
         selectionMode="single"
         selectedKeys={[status]}
-        onAction={onAction}
+        onAction={(key) => onAction(key as StatusType)}
         itemClasses={{
           base: [
             'rounded-md',

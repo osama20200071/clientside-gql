@@ -1,8 +1,7 @@
 'use client'
 
 import PageHeader from '../_components/PageHeader'
-import { useMutation, useQuery } from 'urql'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Button,
   Modal,
@@ -16,14 +15,44 @@ import {
   useDisclosure,
 } from '@nextui-org/react'
 import { PlusIcon } from 'lucide-react'
+import { useCreateIssueMutation } from '@/gql/issuesMutations'
+import { IssueType, useQueryIssues } from '@/gql/issuesQueries'
 import Issue from '../_components/Issue'
 
 const IssuesPage = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
   const [issueName, setIssueName] = useState('')
   const [issueDescription, setIssueDescription] = useState('')
+  const [_, createIssue] = useCreateIssueMutation()
+  // const [issues, setIssues] = useState<IssueType[]>([])
+  // const [data] = useQueryIssues({ input: { statuses: ['DONE', 'BACKLOG'] } })
+  const [{ data, fetching, error }, reFetch] = useQueryIssues()
+  const issues = data?.issues || []
 
-  const onCreate = async (close) => {}
+  // useEffect(() => {
+  //   if (data?.issues) {
+  //     setIssues(data?.issues)
+  //   }
+  // }, [data])
+
+  const onCreate = async (close: () => void) => {
+    if (issueDescription.trim() === '' || issueName.trim() === '') {
+      return
+    }
+
+    const response = await createIssue({
+      input: { content: issueDescription, name: issueName },
+    })
+
+    if (response.data) {
+      close()
+      setIssueName('')
+      setIssueDescription('')
+      reFetch()
+
+      // setIssues((prev) => [response.data?.createIssue!, ...prev])
+    }
+  }
 
   return (
     <div>
@@ -38,7 +67,17 @@ const IssuesPage = () => {
         </Tooltip>
       </PageHeader>
 
-      {[].map((issue) => (
+      {fetching && (
+        <div className="p-5 ">
+          <Spinner />
+        </div>
+      )}
+      {!fetching && issues?.length === 0 && (
+        <i className=" block select-none p-5 text-slate-400">
+          There is no issues yet
+        </i>
+      )}
+      {issues.map((issue) => (
         <div key={issue.id}>
           <Issue issue={issue} />
         </div>
@@ -85,7 +124,7 @@ const IssuesPage = () => {
                 </div>
               </ModalBody>
               <ModalFooter className="border-t">
-                <Button variant="ghost" onPress={() => onOpenChange(false)}>
+                <Button variant="ghost" onPress={() => onOpenChange()}>
                   Cancel
                 </Button>
                 <Button

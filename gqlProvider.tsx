@@ -13,6 +13,7 @@ import { cacheExchange } from '@urql/exchange-graphcache'
 
 import { url } from '@/utils/url'
 import { getToken } from '@/utils/token'
+import { IssueType, queryIssues } from './gql/issuesQueries'
 
 export default function GQLProvider({ children }: PropsWithChildren) {
   const [client, ssr] = useMemo(() => {
@@ -26,7 +27,28 @@ export default function GQLProvider({ children }: PropsWithChildren) {
       url,
       // plugins
       // fetchExchange => to use fetch for the http requests
-      exchanges: [cacheExchange({}), ssr, fetchExchange],
+      exchanges: [
+        cacheExchange({
+          updates: {
+            Mutation: {
+              deleteIssue(_result, args, cache, _info) {
+                cache.updateQuery({ query: queryIssues }, (data) => {
+                  if (!data) return data
+                  console.log(args)
+                  return {
+                    ...data,
+                    issues: data.issues.filter(
+                      (issue: IssueType) => issue.id !== args.id
+                    ),
+                  }
+                })
+              },
+            },
+          },
+        }),
+        ssr,
+        fetchExchange,
+      ],
       fetchOptions: () => {
         const token = getToken()
         return token

@@ -1,10 +1,10 @@
 'use client'
-import { useEffect } from 'react'
+import { PropsWithChildren, useEffect } from 'react'
 import Sidebar from './Sidebar'
 import { isAuth } from '@/utils/token'
 import { redirect } from 'next/navigation'
 
-const DashboardLayout = ({ children }) => {
+const DashboardLayout = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     if (!isAuth()) {
       redirect('/signin')
