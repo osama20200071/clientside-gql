@@ -2,20 +2,24 @@
 
 import { useSigninMutation } from '@/gql/authMutations'
 import { setToken } from '@/utils/token'
-import { Button, Input } from '@nextui-org/react'
+import { Button, Input, Spinner } from '@nextui-org/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
 
 const SigninPage = () => {
   const [state, setState] = useState({ password: '', email: '' })
-  const [signinResult, signin] = useSigninMutation()
+  const [{ fetching }, signin] = useSigninMutation()
   // const [signinResult, signin] = useMutation(SigninMutation)
   const router = useRouter()
 
   const handleSignin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     // const formData = new FormData(e.currentTarget)
+
+    if (state.email.trim() === '' || state.password.trim() === '') {
+      return
+    }
 
     const result = await signin({ input: state })
     console.log(result.data)
@@ -54,9 +58,7 @@ const SigninPage = () => {
             />
           </div>
           <div className="text-end">
-            <Button type="submit" variant="solid" color="primary">
-              Signin
-            </Button>
+            <Button type="submit" variant="solid" color="primary"></Button>
           </div>
         </form>
       </div>

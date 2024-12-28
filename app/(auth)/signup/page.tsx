@@ -2,18 +2,22 @@
 
 import { useSignupMutation } from '@/gql/authMutations'
 import { setToken } from '@/utils/token'
-import { Button, Input } from '@nextui-org/react'
+import { Button, Input, Spinner } from '@nextui-org/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
 
 const SignupPage = () => {
   const [state, setState] = useState({ password: '', email: '' })
-  const [signupResult, signup] = useSignupMutation()
+  const [{ fetching }, signup] = useSignupMutation()
   const router = useRouter()
 
   const handleSignup = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    if (state.email.trim() === '' || state.password.trim() === '') {
+      return
+    }
 
     const response = await signup({ input: state })
     if (response.data?.createUser) {
@@ -50,7 +54,7 @@ const SignupPage = () => {
           </div>
           <div className="text-end">
             <Button type="submit" variant="solid" color="primary">
-              Signup
+              {fetching ? <Spinner color="default" /> : 'Signup'}
             </Button>
           </div>
         </form>
