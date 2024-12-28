@@ -58,7 +58,9 @@ const SigninPage = () => {
             />
           </div>
           <div className="text-end">
-            <Button type="submit" variant="solid" color="primary"></Button>
+            <Button type="submit" variant="solid" color="primary">
+              {fetching ? <Spinner color="default" /> : 'Signin'}
+            </Button>
           </div>
         </form>
       </div>
